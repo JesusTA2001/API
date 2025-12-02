@@ -1,5 +1,5 @@
 from sqlmodel import create_engine,Session
-DATABASE_URL='mysql+pymysql://root:root@localhost/ingles'
+DATABASE_URL='mysql+pymysql://root:root@localhost/proyectoIngles'
 
 engine=create_engine(DATABASE_URL)
 

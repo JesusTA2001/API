@@ -1,312 +1,398 @@
-from  models.UsuariosModel import vUsuarios, alumnos, profesores, administrador, Niveles, Modalidad, Carrera, Grupo, Horario, AlumnoCrear, ProfesorCrear, AdministradorCrear, nivelesCrear, modalidadCrear, GrupoCrear, carreraCrear, HorarioCrear
+from sqlalchemy.exc import SQLAlchemyError
+from sqlmodel import select
+from src.dao.database import Conexion
+from src.models.UsuariosModel import (
+    Usuarios, DatosPersonales, Estudiante, Empleado, Profesor, Administrador,
+    RolEnum, EstadoEnum
+)
+
 class UsuariosDAO:
-    def __init__(self, session):
-        self.session = session
-# CRUD para alumnos
-# Crear un nuevo alumno
-    def crearAlumno(self, alumno_data: AlumnoCrear) -> alumnos:
-        nuevo = alumnos(**alumno_data.dict())
-        self.session.add(nuevo)
-        self.session.commit()
-        self.session.refresh(nuevo)
-        return nuevo
-    # Obtener un alumno por ID
-    def obtenerAlumno(self, id: int) -> alumnos:
-        return self.session.get(alumnos, id)
+    def __init__(self):
+        self.conexion = Conexion()
 
-    # Obtener todos los alumnos
-    def obtenerAlumnos(self) -> list[alumnos]:
-        return self.session.query(alumnos).all()
+    # ==========================================================================
+    #  1. GESTIÓN DE ESTUDIANTES (CRUD)
+    # ==========================================================================
 
-    # Modificar un alumno existente
-    def modificarAlumno(self, id: int, alumno_data: AlumnoCrear) -> alumnos:
-        alumno_existente = self.session.get(alumnos, id)
-        if not alumno_existente:
-            raise Exception("Alumno no encontrado")
-        
-        # Solo actualiza los campos que no sean 'id'
-        for key, value in alumno_data.dict().items():
-            if key != "id":
-                setattr(alumno_existente, key, value)
-        
-        self.session.commit()
-        self.session.refresh(alumno_existente)
-        return alumno_existente
-
-    # Eliminar un alumno
-    def eliminarAlumno(self, id: int) -> bool:
-        alumno_existente = self.session.get(alumnos, id)
-        if not alumno_existente:
-            return False
-        self.session.delete(alumno_existente)
-        self.session.commit()
-        return True
-
-    #CRUD para profesores
-    # Crear un nuevo profesor
-
-    def crearProfesor(self, profesor_data: ProfesorCrear) -> profesores:
-        nuevo = profesores(**profesor_data.dict())
-        self.session.add(nuevo)
-        self.session.commit()
-        self.session.refresh(nuevo)
-        return nuevo
-    # Obtener profesor por ID
-    def obtenerProfesor(self, id_Profesor: int) -> profesores | None:
-        return self.session.get(profesores, id_Profesor)
-
-    # Modificar profesor
-    def modificarProfesor(self, id_Profesor: int, profesor_data: ProfesorCrear) -> profesores:
-        profesor = self.session.get(profesores, id_Profesor)
-        if not profesor:
-            raise Exception("Profesor no encontrado")
-        for key, value in profesor_data.dict().items():
-            if key != "id_Profesor":
-                setattr(profesor, key, value)
-        self.session.commit()
-        self.session.refresh(profesor)
-        return profesor
-        
-    # Eliminar profesor
-    def eliminarProfesor(self, id_Profesor: int) -> bool:
-        profesor = self.session.get(profesores, id_Profesor)
-        if not profesor:
-            return False
-        self.session.delete(profesor)
-        self.session.commit()
-        return True
-        
-    #CRUD para Administradores
-    # Crear un nuevo Administrador
-    def crearAdministrador(self, admin_data: AdministradorCrear) -> administrador:
-        nuevo = administrador(**admin_data.dict())
-        self.session.add(nuevo)
-        self.session.commit()
-        self.session.refresh(nuevo)
-        return nuevo
-    # Obtener administrador por ID
-    def obtenerAdministrador(self, id_Administrador: int) -> administrador | None:
-        return self.session.get(administrador, id_Administrador)
-    # Modificar administrador
-    def modificarAdministrador(self, id_Administrador: int, admin_data: AdministradorCrear) -> administrador:
-        admin = self.session.get(administrador, id_Administrador)
-        if not admin:
-            raise Exception("Administrador no encontrado")
-        for key, value in admin_data.dict().items():
-            if key != "id_Administrador":
-                setattr(admin, key, value)
-        self.session.commit()
-        self.session.refresh(admin)
-        return admin
-
-    # Eliminar administrador
-    def eliminarAdministrador(self, id_Administrador: int) -> bool:
-        admin = self.session.get(administrador, id_Administrador)
-        if not admin:
-            return False
-        self.session.delete(admin)
-        self.session.commit()
-        return True
-
-    #CRUD para Niveles
-    # Crear un nuevo Nivel
-    def crearNivel(self, nivel_data: nivelesCrear) -> Niveles:
-        nuevo = Niveles(**nivel_data.dict())
-        self.session.add(nuevo)
-        self.session.commit()
-        self.session.refresh(nuevo)
-        return nuevo
-    # Obtener nivel por ID
-    def obtenerNivel(self, id_Nivel: int) -> Niveles | None:
-        return self.session.get(Niveles, id_Nivel)
-    # Modificar nivel
-    def modificarNivel(self, id_Nivel: int, nivel_data: nivelesCrear) -> Niveles:
-        nivel = self.session.get(Niveles, id_Nivel)
-        if not nivel:
-            raise Exception("Nivel no encontrado")
-        for key, value in nivel_data.dict().items():
-            if key != "id_Nivel":
-                setattr(nivel, key, value)
-        self.session.commit()
-        self.session.refresh(nivel)
-        return nivel
-    # Eliminar nivel
-    def eliminarNivel(self, id_Nivel: int) -> bool:
-        nivel = self.session.get(Niveles, id_Nivel)
-        if not nivel:
-            return False
-        self.session.delete(nivel)
-        self.session.commit()
-        return True
-    #CRUD para Modalidad
-    # Crear un nueva modalidad
-    def crearModalidad(self, modalidad_data: modalidadCrear) -> Modalidad:
-        nuevo = Modalidad(**modalidad_data.dict())
-        self.session.add(nuevo)
-        self.session.commit()
-        self.session.refresh(nuevo)
-        return nuevo
-    #Obtener modalidad por ID
-    def obtenerModalidad(self, id_Modalidad: int) -> Modalidad | None:
-        return self.session.get(Modalidad, id_Modalidad)
-    #Modificar modalidad
-    def modificarModalidad(self, id_Modalidad: int, modalidad_data: modalidadCrear) -> Modalidad:
-        modalidad = self.session.get(Modalidad, id_Modalidad)
-        if not modalidad:
-            raise Exception("Modalidad no encontrada")
-        for key, value in modalidad_data.dict().items():
-            if key != "id_Modalidad":
-                setattr(modalidad, key, value)
-        self.session.commit()
-        self.session.refresh(modalidad)
-        return modalidad
-    #Eliminar modalidad
-    def eliminarModalidad(self, id_Modalidad: int) -> bool:
-        modalidad = self.session.get(Modalidad, id_Modalidad)
-        if not modalidad:
-            return False
-        self.session.delete(modalidad)
-        self.session.commit()
-        return True
-    #CRUD para Carrera
-    # Crear un nueva Carrera
-    def crearCarrera(self, carrera_data: carreraCrear) -> Carrera:
-        nuevo = Carrera(**carrera_data.dict())
-        self.session.add(nuevo)
-        self.session.commit()
-        self.session.refresh(nuevo)
-        return nuevo
-    #Obtener carrera por ID
-    def obtenerCarrera(self, id_Carrera: int) -> Carrera | None:
-        return self.session.get(Carrera, id_Carrera)
-    #Modificar carrera
-    def modificarCarrera(self, id_Carrera: int, carrera_data: carreraCrear) -> Carrera:
-        carrera = self.session.get(Carrera, id_Carrera)
-        if not carrera:
-            raise Exception("Carrera no encontrada")
-        for key, value in carrera_data.dict().items():
-            if key != "id_Carrera":
-                setattr(carrera, key, value)
-        self.session.commit()
-        self.session.refresh(carrera)
-        return carrera
-    #Eliminar carrera
-    def eliminarCarrera(self, id_Carrera: int) -> bool:
-        carrera = self.session.get(Carrera, id_Carrera)
-        if not carrera:
-            return False
-        self.session.delete(carrera)
-        self.session.commit()
-        return True
-    #CRUD para Grupo
-    # Crear un nuevo Grupo
-    def crearGrupo(self, grupo_data: GrupoCrear) -> Grupo:
-        nuevo = Grupo(**grupo_data.dict())
-        self.session.add(nuevo)
-        self.session.commit()
-        self.session.refresh(nuevo)
-        return nuevo
-    #Obtener grupo por ID
-    def obtenerGrupo(self, id_Grupo: int) -> Grupo | None:
-        return self.session.get(Grupo, id_Grupo)
-    #Modificar grupo
-    def modificarGrupo(self, id_Grupo: int, grupo_data: GrupoCrear) -> Grupo:
-        grupo = self.session.get(Grupo, id_Grupo)
-        if not grupo:
-            raise Exception("Grupo no encontrado")
-        for key, value in grupo_data.dict().items():
-            if key != "id_Grupo":
-                setattr(grupo, key, value)
-        self.session.commit()
-        self.session.refresh(grupo)
-        return grupo
-    #Eliminar grupo
-    def eliminarGrupo(self, id_Grupo: int) -> bool:
-        grupo = self.session.get(Grupo, id_Grupo)
-        if not grupo:
-            return False
-        self.session.delete(grupo)
-        self.session.commit()
-        return True
-    
-    #CRUD para horario
-    # Crear un nuevo horario
-    def crearHorario(self, horario_data: HorarioCrear) -> Horario:
-        # Validación opcional: asegurar que los IDs relacionados existen
-        print(horario_data)
-        #grupo=self.session.get(Grupo, horario_data.id_Grupo)
-        #print(grupo)
-        # if not self.session.get(Grupo, horario_data.id_Grupo):
-        #     raise Exception("El grupo no existe")
-        # if not self.session.get(profesores, horario_data.id_profesor):
-        #     raise Exception("El profesor no existe")
-        # if not self.session.get(Niveles, horario_data.id_nivel):
-        #     raise Exception("El nivel no existe")
-        nuevo = Horario(**horario_data.dict())
-        self.session.add(nuevo)
-        self.session.commit()
-        self.session.refresh(nuevo)
-        return nuevo
-    #Obtener horario por ID
-    def obtenerHorario(self, id_Horario: int) -> Horario | None:
-        return self.session.get(Horario, id_Horario)
-    #Modificar horario
-    def modificarHorario(self, id_Horario: int, horario_data: HorarioCrear) -> Horario:
-        horario = self.session.get(Horario, id_Horario)
-        if not horario:
-            raise Exception("Horario no encontrado")
-        for key, value in horario_data.dict().items():
-            if key != "id_Horario":
-                setattr(horario, key, value)
-        self.session.commit()
-        self.session.refresh(horario)
-        return horario
-    #Eliminar horario
-    def eliminarHorario(self, id_Horario: int) -> bool:
-        horario = self.session.get(Horario, id_Horario)
-        if not horario:
-            return False
-        self.session.delete(horario)
-        self.session.commit()
-        return True
-    #Autenticacion de usuarios
-    def autenticar(self, email: str, password: str) -> vUsuarios | None:
-        # Buscar en alumnos
-        user = self.session.query(alumnos).filter_by(correo=email, password=password).first()
-        if user:
-            return vUsuarios(
-                idUsuario=user.id,
-                usuario=user.nombre,
-                email=user.correo,
-                password=user.password,
-                tipo="Alumno",
-                estatus=True
+    # CREAR ESTUDIANTE
+    def crear_estudiante(self, datos_dict: dict):
+        session = self.conexion.getSession()
+        try:
+            # 1. Datos Personales
+            nuevo_dp = DatosPersonales(
+                apellidoPaterno=datos_dict['apellidoPaterno'],
+                apellidoMaterno=datos_dict['apellidoMaterno'],
+                nombre=datos_dict['nombre'],
+                email=datos_dict['email'],
+                genero=datos_dict.get('genero'),
+                CURP=datos_dict.get('CURP'),
+                telefono=datos_dict.get('telefono'),
+                direccion=datos_dict.get('direccion')
             )
+            session.add(nuevo_dp)
+            session.flush() 
 
-        # Buscar en profesores
-        user = self.session.query(profesores).filter_by(correo=email, password=password).first()
-        if user:
-            return vUsuarios(
-                idUsuario=user.id_Profesor,
-                usuario=user.nombre,
-                email=user.correo,
-                password=user.password,
-                tipo="Profesor",
-                estatus=True
+            # 2. Estudiante
+            nuevo_estudiante = Estudiante(
+                nControl=datos_dict['nControl'],
+                id_dp=nuevo_dp.id_dp,
+                estado=EstadoEnum.activo,
+                ubicacion=datos_dict.get('ubicacion', 'S/N')
             )
-
-        # Buscar en administrador
-        user = self.session.query(administrador).filter_by(correo=email, password=password).first()
-        if user:
-            return vUsuarios(
-                idUsuario=user.id_Administrador,
-                usuario=user.nombre,
-                email=user.correo,
-                password=user.password,
-                tipo="Administrador",
-                estatus=True
+            session.add(nuevo_estudiante)
+            
+            # 3. Usuario Login
+            nuevo_usuario = Usuarios(
+                usuario=datos_dict['usuario'],
+                contraseña=datos_dict['password'],
+                rol=RolEnum.ESTUDIANTE,
+                id_relacion=datos_dict['nControl']
             )
+            session.add(nuevo_usuario)
 
-        # Si no existe en ninguna tabla
-        return None
+            session.commit()
+            session.refresh(nuevo_estudiante)
+            return {"estatus": True, "mensaje": "Estudiante registrado correctamente"}
+        except SQLAlchemyError as e:
+            session.rollback()
+            return {"estatus": False, "mensaje": str(e)}
+        finally:
+            session.close()
 
+    # LEER ESTUDIANTE (JOIN Estudiante + DatosPersonales)
+    def obtener_estudiante(self, nControl: int):
+        session = self.conexion.getSession()
+        try:
+            statement = select(Estudiante, DatosPersonales).where(
+                Estudiante.id_dp == DatosPersonales.id_dp
+            ).where(Estudiante.nControl == nControl)
+            
+            resultado = session.exec(statement).first()
+            
+            if resultado:
+                estudiante, datos = resultado
+                # Retornamos un diccionario combinado
+                respuesta = estudiante.model_dump()
+                respuesta.update(datos.model_dump())
+                return {"estatus": True, "data": respuesta}
+            else:
+                return {"estatus": False, "mensaje": "Estudiante no encontrado"}
+        finally:
+            session.close()
+
+    # MODIFICAR ESTUDIANTE
+    def modificar_estudiante(self, nControl: int, nuevos_datos: dict):
+        session = self.conexion.getSession()
+        try:
+            estudiante = session.get(Estudiante, nControl)
+            if not estudiante:
+                return {"estatus": False, "mensaje": "Estudiante no encontrado"}
+            
+            # Actualizar Datos Personales
+            dp = session.get(DatosPersonales, estudiante.id_dp)
+            if dp:
+                for key, value in nuevos_datos.items():
+                    if hasattr(dp, key) and value is not None:
+                        setattr(dp, key, value)
+            
+            # Actualizar Datos Propios del Estudiante (ej. ubicacion)
+            if 'ubicacion' in nuevos_datos:
+                estudiante.ubicacion = nuevos_datos['ubicacion']
+
+            session.add(dp)
+            session.add(estudiante)
+            session.commit()
+            return {"estatus": True, "mensaje": "Estudiante modificado correctamente"}
+        except SQLAlchemyError as e:
+            session.rollback()
+            return {"estatus": False, "mensaje": str(e)}
+        finally:
+            session.close()
+
+    # ELIMINAR ESTUDIANTE (SOFT DELETE - Cambiar a Inactivo)
+    def eliminar_estudiante(self, nControl: int):
+        session = self.conexion.getSession()
+        try:
+            estudiante = session.get(Estudiante, nControl)
+            if estudiante:
+                estudiante.estado = EstadoEnum.inactivo
+                session.add(estudiante)
+                session.commit()
+                return {"estatus": True, "mensaje": "Estudiante dado de baja (inactivo)"}
+            return {"estatus": False, "mensaje": "Estudiante no encontrado"}
+        except SQLAlchemyError as e:
+            return {"estatus": False, "mensaje": str(e)}
+        finally:
+            session.close()
+
+    # ==========================================================================
+    #  2. GESTIÓN DE PROFESORES (CRUD)
+    # ==========================================================================
+
+    # CREAR PROFESOR
+    def crear_profesor(self, datos_dict: dict):
+        session = self.conexion.getSession()
+        try:
+            # 1. Datos Personales
+            nuevo_dp = DatosPersonales(
+                apellidoPaterno=datos_dict['apellidoPaterno'],
+                apellidoMaterno=datos_dict['apellidoMaterno'],
+                nombre=datos_dict['nombre'],
+                email=datos_dict['email'],
+                genero=datos_dict.get('genero'),
+                CURP=datos_dict.get('CURP'),
+                telefono=datos_dict.get('telefono'),
+                direccion=datos_dict.get('direccion')
+            )
+            session.add(nuevo_dp)
+            session.flush()
+
+            # 2. Empleado Base
+            nuevo_empleado = Empleado(id_dp=nuevo_dp.id_dp, estado=EstadoEnum.activo, RFC=datos_dict.get('RFC'))
+            session.add(nuevo_empleado)
+            session.flush()
+
+            # 3. Profesor
+            nuevo_profesor = Profesor(
+                id_empleado=nuevo_empleado.id_empleado,
+                ubicacion=datos_dict.get('ubicacion'),
+                nivelEstudio=datos_dict.get('nivelEstudio'),
+                estado=EstadoEnum.activo
+            )
+            session.add(nuevo_profesor)
+            session.flush()
+
+            # 4. Usuario
+            nuevo_usuario = Usuarios(
+                usuario=datos_dict['usuario'],
+                contraseña=datos_dict['password'],
+                rol=RolEnum.PROFESOR,
+                id_relacion=nuevo_profesor.id_Profesor
+            )
+            session.add(nuevo_usuario)
+
+            session.commit()
+            return {"estatus": True, "mensaje": "Profesor registrado correctamente"}
+        except SQLAlchemyError as e:
+            session.rollback()
+            return {"estatus": False, "mensaje": str(e)}
+        finally:
+            session.close()
+
+    # LEER PROFESOR (JOIN Profesor -> Empleado -> DatosPersonales)
+    def obtener_profesor(self, id_Profesor: int):
+        session = self.conexion.getSession()
+        try:
+            statement = select(Profesor, Empleado, DatosPersonales)\
+                .join(Empleado, Profesor.id_empleado == Empleado.id_empleado)\
+                .join(DatosPersonales, Empleado.id_dp == DatosPersonales.id_dp)\
+                .where(Profesor.id_Profesor == id_Profesor)
+            
+            resultado = session.exec(statement).first()
+            
+            if resultado:
+                prof, emp, dp = resultado
+                data = {**prof.model_dump(), **emp.model_dump(), **dp.model_dump()}
+                return {"estatus": True, "data": data}
+            else:
+                return {"estatus": False, "mensaje": "Profesor no encontrado"}
+        finally:
+            session.close()
+
+    # MODIFICAR PROFESOR
+    def modificar_profesor(self, id_Profesor: int, nuevos_datos: dict):
+        session = self.conexion.getSession()
+        try:
+            profesor = session.get(Profesor, id_Profesor)
+            if not profesor:
+                return {"estatus": False, "mensaje": "Profesor no encontrado"}
+            
+            empleado = session.get(Empleado, profesor.id_empleado)
+            dp = session.get(DatosPersonales, empleado.id_dp)
+
+            # Actualizar Datos Personales
+            for key, value in nuevos_datos.items():
+                if hasattr(dp, key) and value is not None:
+                    setattr(dp, key, value)
+            
+            # Actualizar Datos Profesor
+            if 'nivelEstudio' in nuevos_datos:
+                profesor.nivelEstudio = nuevos_datos['nivelEstudio']
+            if 'ubicacion' in nuevos_datos:
+                profesor.ubicacion = nuevos_datos['ubicacion']
+            if 'RFC' in nuevos_datos:
+                empleado.RFC = nuevos_datos['RFC']
+
+            session.add(dp)
+            session.add(empleado)
+            session.add(profesor)
+            session.commit()
+            return {"estatus": True, "mensaje": "Profesor modificado correctamente"}
+        except SQLAlchemyError as e:
+            session.rollback()
+            return {"estatus": False, "mensaje": str(e)}
+        finally:
+            session.close()
+
+    # ELIMINAR PROFESOR (Soft Delete)
+    def eliminar_profesor(self, id_Profesor: int):
+        session = self.conexion.getSession()
+        try:
+            profesor = session.get(Profesor, id_Profesor)
+            if profesor:
+                # Damos de baja al profesor y al empleado
+                profesor.estado = EstadoEnum.inactivo
+                empleado = session.get(Empleado, profesor.id_empleado)
+                if empleado:
+                    empleado.estado = EstadoEnum.inactivo
+                    session.add(empleado)
+                
+                session.add(profesor)
+                session.commit()
+                return {"estatus": True, "mensaje": "Profesor dado de baja"}
+            return {"estatus": False, "mensaje": "Profesor no encontrado"}
+        finally:
+            session.close()
+# ==========================================================================
+    #  3. GESTIÓN DE ADMINISTRADORES (CRUD)
+    # ==========================================================================
+
+    # CREAR ADMINISTRADOR
+    def crear_administrador(self, datos_dict: dict):
+        session = self.conexion.getSession()
+        try:
+            # 1. Datos Personales
+            nuevo_dp = DatosPersonales(
+                apellidoPaterno=datos_dict['apellidoPaterno'],
+                apellidoMaterno=datos_dict['apellidoMaterno'],
+                nombre=datos_dict['nombre'],
+                email=datos_dict['email'],
+                genero=datos_dict.get('genero'),
+                CURP=datos_dict.get('CURP'),
+                telefono=datos_dict.get('telefono'),
+                direccion=datos_dict.get('direccion')
+            )
+            session.add(nuevo_dp)
+            session.flush()
+
+            # 2. Empleado Base
+            nuevo_empleado = Empleado(
+                id_dp=nuevo_dp.id_dp, 
+                estado=EstadoEnum.activo,
+                RFC=datos_dict.get('RFC')
+            )
+            session.add(nuevo_empleado)
+            session.flush()
+
+            # 3. Administrador
+            nuevo_admin = Administrador(
+                id_empleado=nuevo_empleado.id_empleado,
+                estado=EstadoEnum.activo
+            )
+            session.add(nuevo_admin)
+            session.flush()
+
+            # 4. Usuario
+            nuevo_usuario = Usuarios(
+                usuario=datos_dict['usuario'],
+                contraseña=datos_dict['password'],
+                rol=RolEnum.ADMINISTRADOR,
+                id_relacion=nuevo_admin.id_Administrador
+            )
+            session.add(nuevo_usuario)
+
+            session.commit()
+            return {"estatus": True, "mensaje": "Administrador registrado correctamente"}
+        except SQLAlchemyError as e:
+            session.rollback()
+            return {"estatus": False, "mensaje": str(e)}
+        finally:
+            session.close()
+
+    # LEER ADMINISTRADOR
+    def obtener_administrador(self, id_admin: int):
+        session = self.conexion.getSession()
+        try:
+            statement = select(Administrador, Empleado, DatosPersonales)\
+                .join(Empleado, Administrador.id_empleado == Empleado.id_empleado)\
+                .join(DatosPersonales, Empleado.id_dp == DatosPersonales.id_dp)\
+                .where(Administrador.id_Administrador == id_admin)
+            
+            resultado = session.exec(statement).first()
+            
+            if resultado:
+                admin, emp, dp = resultado
+                # Unimos los diccionarios ignorando duplicados
+                data = {**admin.model_dump(), **emp.model_dump(), **dp.model_dump()}
+                return {"estatus": True, "data": data}
+            else:
+                return {"estatus": False, "mensaje": "Administrador no encontrado"}
+        finally:
+            session.close()
+
+    # MODIFICAR ADMINISTRADOR
+    def modificar_administrador(self, id_admin: int, nuevos_datos: dict):
+        session = self.conexion.getSession()
+        try:
+            admin = session.get(Administrador, id_admin)
+            if not admin:
+                return {"estatus": False, "mensaje": "Administrador no encontrado"}
+            
+            empleado = session.get(Empleado, admin.id_empleado)
+            dp = session.get(DatosPersonales, empleado.id_dp)
+
+            # Actualizar Datos Personales
+            for key, value in nuevos_datos.items():
+                if hasattr(dp, key) and value is not None:
+                    setattr(dp, key, value)
+            
+            # Actualizar RFC si viene
+            if 'RFC' in nuevos_datos:
+                empleado.RFC = nuevos_datos['RFC']
+
+            session.add(dp)
+            session.add(empleado)
+            session.add(admin)
+            session.commit()
+            return {"estatus": True, "mensaje": "Administrador modificado correctamente"}
+        except SQLAlchemyError as e:
+            session.rollback()
+            return {"estatus": False, "mensaje": str(e)}
+        finally:
+            session.close()
+
+    # ELIMINAR ADMINISTRADOR (Soft Delete)
+    def eliminar_administrador(self, id_admin: int):
+        session = self.conexion.getSession()
+        try:
+            admin = session.get(Administrador, id_admin)
+            if admin:
+                admin.estado = EstadoEnum.inactivo
+                empleado = session.get(Empleado, admin.id_empleado)
+                if empleado:
+                    empleado.estado = EstadoEnum.inactivo
+                    session.add(empleado)
+                
+                session.add(admin)
+                session.commit()
+                return {"estatus": True, "mensaje": "Administrador dado de baja"}
+            return {"estatus": False, "mensaje": "Administrador no encontrado"}
+        finally:
+            session.close()
+
+    # ==========================================================================
+    #  4. AUTENTICACIÓN
+    # ==========================================================================
+    def autenticar_usuario(self, usuario: str, password: str):
+        session = self.conexion.getSession()
+        try:
+            statement = select(Usuarios).where(Usuarios.usuario == usuario).where(Usuarios.contraseña == password)
+            resultado = session.exec(statement).first()
+            if resultado:
+                return {"estatus": True, "usuario": resultado, "mensaje": "Autenticación exitosa"}
+            else:
+                return {"estatus": False, "mensaje": "Credenciales incorrectas"}
+        except Exception as e:
+            return {"estatus": False, "mensaje": str(e)}
+        finally:
+            session.close()

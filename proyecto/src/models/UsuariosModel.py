@@ -1,221 +1,193 @@
-from sqlmodel import SQLModel,Field
+from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional
-from pydantic import BaseModel
-class vUsuarios(SQLModel):
-    idUsuario: int
-    usuario: str
-    email: str
-    password: str
-    tipo: str   # "Alumno", "Profesor" o "Administrador"
-    estatus: bool = True 
+from enum import Enum as PyEnum
+
 # ==============================
-# Tablas de Usuarios
+# Enums (Para coincidir con el script de BD)
 # ==============================
-class Alumno(SQLModel):
-    id: Optional[int] = Field(default=None, primary_key=True, index=True)  # auto-increment
-    nControl: int
-    apellidoPaterno: str
-    apellidoMaterno: str
-    nombre: str
-    email: str
-    genero: str
-    password: str
-    CURP: str
-    telefono: str
-    Direccion: str
-    Modalidad: str
-    Nivel: str
+class RolEnum(str, PyEnum):
+    ADMINISTRADOR = "ADMINISTRADOR"
+    ESTUDIANTE = "ESTUDIANTE"
+    PROFESOR = "PROFESOR"
+    COORDINADOR = "COORDINADOR"
+    DIRECTIVO = "DIRECTIVO"
 
-# --- Esquema de entrada (request) ---
-class AlumnoCrear(Alumno):
-    pass
+class EstadoEnum(str, PyEnum):
+    activo = "activo"
+    inactivo = "inactivo"
 
-# --- Esquema de salida (response) ---
-class AlumnoSalida(Alumno):
-    id: int
+class EstadoGrupoEnum(str, PyEnum):
+    concluido = "concluido"
+    actual = "actual"
 
-class alumnos(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True, index=True)
-    nControl: int
-    apellidoPaterno: str
-    apellidoMaterno: str
-    nombre: str
-    email: str
-    genero: str
-    password: str
-    CURP: str
-    telefono: str
-    Direccion: str
-    Modalidad: str
-    Nivel: str
-# profesores
-class Profesores(SQLModel):
-    id_Profesor:int=Field(primary_key=True)
-    apellidoPaterno:str
-    apellidoMaterno:str
-    nombre:str
-    email:str
-    genero:str
-    password:str
-    CURP:str
-    telefono:str
-    direccion:str
-    nivelEstudio:str
 
-class ProfesorCrear(Profesores):
-    pass
+# 1. TABLA BASE: DatosPersonales
 
-class ProfesorSalida(Profesores):
-    id_Profesor:int
-
-class profesores(SQLModel,table=True):
-    id_Profesor:int=Field(primary_key=True)
-    apellidoPaterno:str
-    apellidoMaterno:str
-    nombre:str
-    email:str
-    genero:str
-    password:str
-    CURP:str
-    telefono:str
-    direccion:str
-    nivelEstudio:str
-
-#administrador
-class Administrador(SQLModel):
-    id_Administrador:int=Field(primary_key=True)
-    apellidoPaterno:str
-    apellidoMaterno:str
-    nombre:str
-    email:str
-    genero:str
-    password:str
-    CURP:str
-    telefono:str
-    direccion:str
+class DatosPersonales(SQLModel, table=True):
+    __tablename__ = "DatosPersonales"
     
-class AdministradorCrear(Administrador):
-    pass
+    id_dp: Optional[int] = Field(default=None, primary_key=True)
+    apellidoPaterno: Optional[str] = Field(max_length=50)
+    apellidoMaterno: Optional[str] = Field(max_length=50)
+    nombre: Optional[str] = Field(max_length=50)
+    email: Optional[str] = Field(max_length=100)
+    genero: Optional[str] = Field(max_length=30)
+    CURP: Optional[str] = Field(max_length=40)
+    telefono: Optional[str] = Field(max_length=50)
+    direccion: Optional[str] = Field(max_length=255)
 
-class AdministradorSalida(Administrador):
-    id_Administrador:int
+# ==============================
+# 2. ESTRUCTURA DE EMPLEADOS
+# ==============================
+class Empleado(SQLModel, table=True):
+    __tablename__ = "Empleado"
 
-class administrador(SQLModel,table=True):
-    id_Administrador:int=Field(primary_key=True)
-    apellidoPaterno:str
-    apellidoMaterno:str
-    nombre:str
-    email:str
-    genero:str
-    password:str
-    CURP:str
-    telefono:str
-    direccion:str
+    id_empleado: Optional[int] = Field(default=None, primary_key=True)
+    id_dp: int = Field(foreign_key="DatosPersonales.id_dp")
+    estado: Optional[EstadoEnum] = None
+    RFC: Optional[str] = Field(max_length=20)
 
-#Niveles
-class niveles(SQLModel):
-    id_Nivel:int=Field(primary_key=True)
-    Nivel:str
-class nivelesCrear(niveles):
-    pass
+class Administrador(SQLModel, table=True):
+    __tablename__ = "Administrador"
 
-class nivelesSalida(niveles):
-    id_Nivel:int
+    id_Administrador: Optional[int] = Field(default=None, primary_key=True)
+    id_empleado: int = Field(foreign_key="Empleado.id_empleado")
+    estado: Optional[EstadoEnum] = None
 
-class Niveles(SQLModel,table=True):
-    id_Nivel:int=Field(primary_key=True)
-    Nivel:str
+class Coordinador(SQLModel, table=True):
+    __tablename__ = "Coordinador"
+    
+    id_Coordinador: Optional[int] = Field(default=None, primary_key=True)
+    id_empleado: int = Field(foreign_key="Empleado.id_empleado")
+    estado: Optional[EstadoEnum] = None
 
-#Modalidad
-class modalidad(SQLModel):
-    id_Modalidad:int=Field(primary_key=True)
-    Modalidad:str
+class Directivo(SQLModel, table=True):
+    __tablename__ = "Directivo"
 
-class modalidadCrear(modalidad):
-    pass
+    id_Directivo: Optional[int] = Field(default=None, primary_key=True)
+    id_empleado: int = Field(foreign_key="Empleado.id_empleado")
+    estado: Optional[EstadoEnum] = None
 
-class modalidadSalida(modalidad):
-    id_Modalidad:int
+class Profesor(SQLModel, table=True):
+    __tablename__ = "Profesor"
 
-class Modalidad(SQLModel,table=True):
-    id_Modalidad:int=Field(primary_key=True)
-    Modalidad:str
+    id_Profesor: Optional[int] = Field(default=None, primary_key=True)
+    id_empleado: int = Field(foreign_key="Empleado.id_empleado")
+    ubicacion: Optional[str] = Field(max_length=50)
+    estado: Optional[EstadoEnum] = None
+    nivelEstudio: Optional[str] = Field(max_length=50)
 
-#Carreras
-class carrera(SQLModel):
-    id_Carrera:int=Field(primary_key=True)
-    Carrera:str
 
-class carreraCrear(carrera):
-    pass
+# 3. ESTUDIANTE
 
-class carreraSalida(carrera):
-    id_Carrera:int
+class Estudiante(SQLModel, table=True):
+    __tablename__ = "Estudiante"
 
-class Carrera(SQLModel,table=True):
-    id_Carrera:int=Field(primary_key=True)
-    Carrera:str
+    nControl: int = Field(primary_key=True) # Nota: No es auto-increment, es manual (número de control)
+    id_dp: int = Field(foreign_key="DatosPersonales.id_dp")
+    estado: Optional[EstadoEnum] = None
+    ubicacion: Optional[str] = Field(max_length=50)
 
-# Horario
-class Horario(SQLModel, table=True):
-    id_Horario: Optional[int] = Field(default=None, primary_key=True)
-    anio: str
-    id_Grupo: int
-    id_profesor: int
-    id_nivel: int
-    diaSemana: str
+# 4. LOGIN Y ACCESO
 
-class HorarioCrear(SQLModel):
-    anio: str
-    id_Grupo: int
-    id_profesor: int
-    id_nivel: int
-    diaSemana: str
+class Usuarios(SQLModel, table=True):
+    __tablename__ = "Usuarios"
 
-class HorarioSalida(Horario):
-    pass
-
-#Grupo
-# class grupo(SQLModel):
-#     id_Grupo:int=Field(primary_key=True)
-#     Grupo:str
-#     id_Horario: int = Field(foreign_key="Horario.id_Horario")
-#     id_Profesor: int = Field(foreign_key="profesores.id_Profesor")
-#     id_Alumno: int = Field(foreign_key="alumnos.id")
-#     id_Nivel: int = Field(foreign_key="niveles.id_Nivel")
-#     id_Modalidad: int = Field(foreign_key="modalidad.id_Modalidad")
-#     Periodo: str
-
-#Grupo
-class Grupo(SQLModel, table=True):
-    id_Grupo: Optional[int] = Field(default=None, primary_key=True)
-    Grupo: str
-    id_Horario: int #= Field(foreign_key="horario.id_Horario")
-    id_Profesor: int #= Field(foreign_key="profesores.id_Profesor")
-    id_Alumno: int #= Field(foreign_key="alumnos.id")
-    id_Nivel: int #= Field(foreign_key="niveles.id_Nivel")
-    id_Modalidad: int #= Field(foreign_key="modalidad.id_Modalidad")
-    Periodo: str
-
-class GrupoCrear(SQLModel):
-    Grupo: str
-    id_Horario: int
-    id_Profesor: int
-    id_Alumno: int
-    id_Nivel: int
-    id_Modalidad: int
-    Periodo: str
-
-class GrupoSalida(Grupo):
-    pass
-
-class UsuarioSalida(BaseModel):
-    usuario: Optional[alumnos | profesores | administrador] = None
+    id_usuario: Optional[int] = Field(default=None, primary_key=True)
+    usuario: str = Field(max_length=50, unique=True)
+    contraseña: str = Field(max_length=255)
+    rol: RolEnum
+    id_relacion: int  # Guardará nControl, id_Profesor, id_Administrador, etc.
 
 class UsuarioAutenticar(SQLModel):
-    email:str
-    password:str
+    usuario: str
+    password: str
 
-class Salida(BaseModel):
+# 5. CATALOGOS Y GRUPOS (Esenciales para que funcione el resto)
+
+class Nivel(SQLModel, table=True):
+    __tablename__ = "Nivel"
+    id_Nivel: int = Field(primary_key=True)
+    nivel: str = Field(max_length=50)
+
+class Periodo(SQLModel, table=True):
+    __tablename__ = "Periodo"
+    id_Periodo: int = Field(primary_key=True)
+    descripcion: str = Field(max_length=50)
+    año: int
+
+class CatalogoHorarios(SQLModel, table=True):
+    __tablename__ = "CatalogoHorarios"
+    id_cHorario: Optional[int] = Field(default=None, primary_key=True)
+    ubicacion: Optional[str] = Field(max_length=50)
+    diaSemana: Optional[str] = Field(max_length=20)
+    hora: Optional[str] = Field(max_length=20)
+    estado: Optional[EstadoEnum] = None
+
+class Grupo(SQLModel, table=True):
+    __tablename__ = "Grupo"
+    id_Grupo: Optional[int] = Field(default=None, primary_key=True)
+    grupo: Optional[str] = Field(max_length=50)
+    id_Periodo: Optional[int] = Field(foreign_key="Periodo.id_Periodo")
+    id_Profesor: Optional[int] = Field(foreign_key="Profesor.id_Profesor")
+    id_Nivel: Optional[int] = Field(foreign_key="Nivel.id_Nivel")
+    ubicacion: Optional[str] = Field(max_length=50)
+    id_cHorario: Optional[int] = Field(foreign_key="CatalogoHorarios.id_cHorario")
+
+# ==============================
+# 6. GESTIÓN ACADÉMICA: INSCRIPCIONES, CALIFICACIONES, ASISTENCIA
+# ==============================
+
+class EstudianteGrupo(SQLModel, table=True):
+    """Tabla intermedia: relación Estudiante-Grupo (inscripciones)"""
+    __tablename__ = "EstudianteGrupo"
+    
+    id_EstudianteGrupo: Optional[int] = Field(default=None, primary_key=True)
+    nControl: int = Field(foreign_key="Estudiante.nControl")
+    id_Grupo: int = Field(foreign_key="Grupo.id_Grupo")
+    estado: EstadoGrupoEnum = Field(default=EstadoGrupoEnum.actual)
+
+class Calificaciones(SQLModel, table=True):
+    """Registro de calificaciones por estudiante, grupo y periodo"""
+    __tablename__ = "Calificaciones"
+    
+    id_Calificaciones: Optional[int] = Field(default=None, primary_key=True)
+    nControl: int = Field(foreign_key="Estudiante.nControl")
+    id_Grupo: int = Field(foreign_key="Grupo.id_Grupo")
+    id_Periodo: int = Field(foreign_key="Periodo.id_Periodo")
+    id_nivel: int = Field(foreign_key="Nivel.id_Nivel")
+    parcial1: Optional[float] = Field(default=0)
+    parcial2: Optional[float] = Field(default=0)
+    parcial3: Optional[float] = Field(default=0)
+    final: Optional[float] = Field(default=0)
+
+class EstudianteCalificaciones(SQLModel, table=True):
+    """Tabla intermedia: vincula estudiantes con sus calificaciones"""
+    __tablename__ = "EstudianteCalificaciones"
+    
+    id_EstudianteCalificaciones: Optional[int] = Field(default=None, primary_key=True)
+    nControl: int = Field(foreign_key="Estudiante.nControl")
+    id_Calificaciones: int = Field(foreign_key="Calificaciones.id_Calificaciones")
+
+class Asistencia(SQLModel, table=True):
+    """Registro de asistencias de estudiantes por grupo"""
+    __tablename__ = "Asistencia"
+    
+    id_Asistencia: Optional[int] = Field(default=None, primary_key=True)
+    nControl: int = Field(foreign_key="Estudiante.nControl")
+    id_Grupo: int = Field(foreign_key="Grupo.id_Grupo")
+    fecha: str = Field(max_length=10)  # Formato: YYYY-MM-DD
+
+# ==============================
+# MODELOS DE RESPUESTA GENERAL (Pydantic puro para respuestas de API)
+# ==============================
+class Salida(SQLModel):
     estatus: bool
     mensaje: str
+
+class UsuarioSalida(SQLModel):
+    """Modelo para respuesta de usuario autenticado"""
+    id_usuario: int
+    usuario: str
+    rol: RolEnum
+    id_relacion: int
