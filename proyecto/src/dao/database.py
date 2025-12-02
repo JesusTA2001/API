@@ -1,7 +1,16 @@
-from sqlmodel import create_engine,Session
-DATABASE_URL='mysql+pymysql://root:root@localhost/proyectoIngles'
+from sqlmodel import create_engine, Session
 
-engine=create_engine(DATABASE_URL)
+# DATABASE_URL='mysql+pymysql://root:root@localhost/proyectoIngles'
+DATABASE_URL = 'mysql+pymysql://admin_ingles:Gui11ermo1@mysqlingles.mysql.database.azure.com/proyectoIngles'
+
+# Configuración SSL para Azure MySQL
+connect_args = {
+    "ssl": {
+        "ssl_mode": "required"
+    }
+}
+
+engine = create_engine(DATABASE_URL, connect_args=connect_args)
 
 class Conexion:
     def __init__(self):
