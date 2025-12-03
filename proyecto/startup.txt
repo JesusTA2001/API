@@ -1,4 +1,4 @@
 # Archivo de configuración para Azure App Service
 # Especifica el comando de inicio para la aplicación
 
-gunicorn -w 4 -k uvicorn.workers.UvicornWorker src.main:app --bind 0.0.0.0:8000
+cd /home/site/wwwroot && gunicorn -w 4 -k uvicorn.workers.UvicornWorker src.main:app --bind 0.0.0.0:8000
