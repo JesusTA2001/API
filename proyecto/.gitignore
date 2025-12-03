@@ -1,0 +1,31 @@
+# Entornos virtuales
+env/
+venv/
+ENV/
+.venv/
+
+# Archivos Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Configuración local
+.env
+*.log
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Distribución
+build/
+dist/
+*.egg-info/
+
+# Azure
+.azure/

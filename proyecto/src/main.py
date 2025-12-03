@@ -13,13 +13,7 @@ from src.models.UsuariosModel import (
 from src.dao.UsuariosDAO import UsuariosDAO
 from src.dao.CatalogosDAO import CatalogosDAO
 from src.dao.GestionAcademicaDAO import GestionAcademicaDAO
-
-# ==========================================
-# CONFIGURACIÓN DE SEGURIDAD
-# ==========================================
-SECRET_KEY = "tu_clave_secreta_super_segura_cambiala_en_produccion"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+from src.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 
 # Esquema de seguridad OAuth2 (El frontend enviará usuario/pass a "/token")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")

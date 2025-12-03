@@ -1,7 +1,5 @@
 from sqlmodel import create_engine, Session
-
-# DATABASE_URL='mysql+pymysql://root:root@localhost/proyectoIngles'
-DATABASE_URL = 'mysql+pymysql://admin_ingles:Gui11ermo1@mysqlingles.mysql.database.azure.com/proyectoIngles'
+from src.config import DATABASE_URL
 
 # Configuración SSL para Azure MySQL
 connect_args = {
